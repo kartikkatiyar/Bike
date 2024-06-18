@@ -62,7 +62,7 @@ class Validator {
   }
 
   static async getUserByPhoneNumber(phone_number, { attempt }) {
-    const user = await User.findBy("phone_number", phone_number);
+    const user = await User.findBy("phone", phone_number);
     if (user) {
       if (attempt === "logIn") {
         return {
