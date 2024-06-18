@@ -5,6 +5,7 @@ const app = express();
 
 const authRoutes = require('./routes/auth.js');
 const businessRouter = require('./routes/business.js');
+const { verifyToken } = require('./middleware/verifyToken.js');
 
 dotenv.config()
 app.use(express.json());
@@ -16,8 +17,7 @@ app.get("/", (req, res) => {
 });
 
 app.use('/api/auth', authRoutes);
-app.use('/api/business', businessRouter);
-
+app.use('/api/business',verifyToken, businessRouter);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
