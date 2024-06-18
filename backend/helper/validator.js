@@ -60,6 +60,37 @@ class Validator {
       }
     }
   }
+
+  static async getUserByPhoneNumber(phone_number, { attempt }) {
+    const user = await User.findBy("phone_number", phone_number);
+    if (user) {
+      if (attempt === "logIn") {
+        return {
+          isNewUserEntry: false,
+          userData: user,
+        };
+      } else if (attempt === "signup") {
+        return {
+          isNewUserEntry: false,
+          userData: user,
+          msg: "user with this phone number already exists",
+        };
+      }
+    } else {
+      if (attempt === "logIn") {
+        return {
+          isNewUserEntry: true,
+          userData: null,
+          msg: "phone number not found in the database",
+        };
+      } else if (attempt === "signup") {
+        return {
+          isNewUserEntry: true,
+          userData: user,
+        };
+      }
+    }
+  }
 }
 
 module.exports = { Validator };
