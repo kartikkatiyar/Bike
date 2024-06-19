@@ -1,21 +1,57 @@
-const { Validator } = require("../helper/validator");
+// import { BusinessDataValidator } from "../helper/businessDataValidator";
+const {BusinessDataValidator} = require("../helper/businessDataValidator");
+const {Business} = require("../models/business");
 
-const createAboutBusiness = async (req, res) => {
-  if (req.verified == false) {
-    return res.status(403).send(req.msg);
+const addBusiness = async (req, res) => {
+  const { business_name, business_address, business_registration_number, PAN, GST } = req.body;
+  const userId = 3;
+  const { isInputValid, msg} =
+   await BusinessDataValidator.validateBusinessData({
+      business_name,
+      business_address,
+      business_registration_number,
+      PAN,
+      GST,
+      userId
+    }); 
+
+  if (isInputValid) {
+    return res.status(400).json({ message: msg });
   }
-  const { businessName, businessAddress, businessRegNo, pan, gst } = req.body;
 
-  const { isInputValid, msg: inputValidationErrorMsg } = Validator.inputValidation({
-    businessName,
-    businessAddress,
-    businessRegNo,
-    pan,
-    gst,
+  const business = new Business({
+    business_name,
+    business_address,
+    business_registration_number,
+    PAN,
+    GST,
+    userId,
   });
-  if (!isInputValid) {
-    return res.status(400).json({ msg: inputValidationErrorMsg });
+  try {
+    await business.save();
+    return res.status(200).json({ msg: "Business added successfully!" });
+  } catch (error) {
+    console.error("Error executing query:", error);
+    res.status(500).json({ msg: error.message || "Internal server error" });
+    throw error;
   }
-  const userId = req.id;
-
 };
+
+const addAdditionalInfo = async (req, res) => {
+  const { id, image_url, business_account_number } = req.body;
+
+  try {
+
+    const business = await Business.addAdditionalInfo(id, image_url, business_account_number);
+    if (!business) {
+      return res.status(404).json({ msg: "Business not found" });
+    }
+    res.status(200).json({ msg: "Business additional info added successfully!" });
+  }catch(error) {
+    console.error("Error executing query:", error);
+    res.status(500).json({ msg: error.message || "Internal server error" });
+    throw error;
+  }
+}
+
+module.exports = { addBusiness, addAdditionalInfo };
